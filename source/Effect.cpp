@@ -15,7 +15,6 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& filePath)
 Effect::~Effect()
 {
 	m_pEffect->Release();
-	m_pTechnique->Release();
 }
 
 ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& filePath)

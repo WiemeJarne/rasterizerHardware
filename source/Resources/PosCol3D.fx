@@ -7,12 +7,12 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-	float3 Position : SV_POSITION;
+	float4 Position : SV_POSITION;
 	float3 Color : COLOR;
 };
 
 // Vertex Shader
-VS_OUTPUT VS(VS_OUTPUT input)
+VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 	output.Position = float4(input.Position, 1.f);
@@ -27,12 +27,12 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 }
 
 // Technique
-Technique11 DefaultTechnique
+technique11 DefaultTechnique
 {
 	pass P0
 	{
-		SetVertexShader( CompileShader( vs_5_0, VS() );
+		SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
-		SetPixelShader( CompileShader( ps_5_0, PS() );
+		SetPixelShader( CompileShader( ps_5_0, PS() ) );
 	}
 }

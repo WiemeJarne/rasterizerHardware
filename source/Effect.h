@@ -12,6 +12,9 @@ public:
 	Effect& operator=(const Effect& other) = delete;
 	Effect& operator=(Effect&& other) = delete;
 
+	ID3DX11Effect* GetEffect() const { return m_pEffect; };
+	ID3DX11EffectTechnique* GetTechnique() const { return m_pTechnique; };
+
 private:
 	ID3DX11Effect* m_pEffect;
 	ID3DX11EffectTechnique* m_pTechnique;

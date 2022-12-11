@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
+#include "Mesh.h"
 
 namespace dae {
 
@@ -20,6 +21,8 @@ namespace dae {
 		{
 			std::cout << "DirectX initialization failed!\n";
 		}
+
+		m_pMesh = new Mesh(m_pDevice);
 	}
 
 	Renderer::~Renderer()
@@ -48,6 +51,8 @@ namespace dae {
 
 		if (m_pDevice)
 			m_pDevice->Release();
+
+		delete m_pMesh;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -66,19 +71,7 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. Set pipeline + invoke drawcalls (= render)
-		// Create Vertex Layout
-		static constexpr uint32_t numElement{ 2 };
-		D3D11_INPUT_ELEMENT_DESC vertexDesc[numElement]{};
-
-		vertexDesc[0].SemanticName = "POSITION";
-		vertexDesc[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		vertexDesc[0].AlignedByteOffset = 0;
-		vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-
-		vertexDesc[0].SemanticName = "COLOR";
-		vertexDesc[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		vertexDesc[0].AlignedByteOffset = 12;
-		vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		m_pMesh->Render(m_pDeviceContext);
 
 		//3. Present BackBuffer (swap)
 		m_pSwapChain->Present(0, 0);
