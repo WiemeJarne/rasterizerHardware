@@ -9,7 +9,8 @@ namespace dae
 		Mesh(ID3D11Device* pDevice);
 		~Mesh();
 
-		void Render(ID3D11DeviceContext* pDeviceContext) const;
+		void Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix) const;
+		Matrix GetWorldMatrix() { return m_WorldMatrix; };
 
 	private:
 		Effect* m_pEffect{};
@@ -31,5 +32,7 @@ namespace dae
 		};
 		std::vector<uint32_t> m_Indices{0, 1, 2};
 		uint32_t m_AmountOfIndices{};
+
+		Matrix m_WorldMatrix{};
 	};
 }

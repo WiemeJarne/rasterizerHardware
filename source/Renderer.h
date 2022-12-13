@@ -1,4 +1,5 @@
 #pragma once
+#include "Camera.h"
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -26,6 +27,8 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+
+		Camera m_Camera{};
 
 		bool m_IsInitialized{ false };
 

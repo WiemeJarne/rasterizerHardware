@@ -81,8 +81,10 @@ namespace dae
 		delete m_pEffect;
 	}
 
-	void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
+	void Mesh::Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix) const
 	{
+		m_pEffect->SetMatrix(worldViewProjectionMatrix);
+
 		//1. Set Primitive Topology
 		pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
