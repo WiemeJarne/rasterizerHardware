@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "Mesh.h"
+#include "Texture.h"
+#include "Effect.h"
 
 namespace dae {
 
@@ -22,7 +24,13 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
+		m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png", m_pDevice);
+
+		m_pDeviceContext->GenerateMips(m_pTexture->GetSRV());
+
 		m_pMesh = new Mesh(m_pDevice);
+		m_pMesh->GetEffectPtr()->SetDiffuseMap(m_pTexture);
+		m_Camera.Initialize(45, { 0.f, 0.f, -10.f }, m_Width / static_cast<float>(m_Height));
 	}
 
 	Renderer::~Renderer()
@@ -53,6 +61,7 @@ namespace dae {
 			m_pDevice->Release();
 
 		delete m_pMesh;
+		delete m_pTexture;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -71,7 +80,7 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. Set pipeline + invoke drawcalls (= render)
-		Matrix worldViewProjectionMatirx{ m_Camera.viewMatrix * m_Camera.projectionMatrix };
+		Matrix worldViewProjectionMatirx{ m_pMesh->GetWorldMatrix() * m_Camera.viewMatrix * m_Camera.projectionMatrix };
 		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatirx);
 
 		//3. Present BackBuffer (swap)

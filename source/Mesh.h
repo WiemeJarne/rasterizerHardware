@@ -11,6 +11,7 @@ namespace dae
 
 		void Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix) const;
 		Matrix GetWorldMatrix() { return m_WorldMatrix; };
+		Effect* GetEffectPtr() const { return m_pEffect; };
 
 	private:
 		Effect* m_pEffect{};
@@ -24,6 +25,12 @@ namespace dae
 			ColorRGB color;
 		};
 
+		struct Vertex_PosTex
+		{
+			Vector3 position;
+			Vector3 uv;
+		};
+
 		std::vector<Vertex_PosCol> m_Vertices
 		{
 			{{0.f, 0.5f, 0.5f}, {1.f, 0.f, 0.f}},
@@ -33,6 +40,12 @@ namespace dae
 		std::vector<uint32_t> m_Indices{0, 1, 2};
 		uint32_t m_AmountOfIndices{};
 
-		Matrix m_WorldMatrix{};
+		Matrix m_WorldMatrix
+		{
+			{1, 0, 0, 0},
+			{0, 1, 0, 0},
+			{0, 0, 1, 0},
+			{0, 0, 0, 1}
+		};
 	};
 }

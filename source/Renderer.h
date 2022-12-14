@@ -7,6 +7,7 @@ struct SDL_Surface;
 namespace dae
 {
 	class Mesh;
+	class Texture;
 
 	class Renderer final
 	{
@@ -39,6 +40,8 @@ namespace dae
 		ID3D11DepthStencilView* m_pDepthStencilView;
 		ID3D11Resource* m_pRenderTargetBuffer;
 		ID3D11RenderTargetView* m_pRenderTargetView;
+
+		Texture* m_pTexture;
 
 		Mesh* m_pMesh{};
 

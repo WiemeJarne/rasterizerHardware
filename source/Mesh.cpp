@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "Effect.h"
+#include <cassert>
 
 namespace dae
 {
 	Mesh::Mesh(ID3D11Device* pDevice)
-		:m_pEffect{ new Effect(pDevice, L"Resources/PosCol3D.fx") }
+		:m_pEffect{ new Effect(pDevice, L"Resources/PosTex.fx") }
 	{
 		//Create Vertex Layout
 		static constexpr uint32_t amountOfElements{ 2 };
@@ -16,8 +17,8 @@ namespace dae
 		vertexDesc[0].AlignedByteOffset = 0;
 		vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
-		vertexDesc[1].SemanticName = "COLOR";
-		vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		vertexDesc[1].SemanticName = "TEXTCOORD";
+		vertexDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 		vertexDesc[1].AlignedByteOffset = 12;
 		vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
@@ -38,12 +39,12 @@ namespace dae
 		};
 
 		if (FAILED(result))
-			return;
+			assert("Failed to create input layout\n");
 
 		//Create vertex buffer
 		D3D11_BUFFER_DESC bd{};
 		bd.Usage = D3D11_USAGE_IMMUTABLE;
-		bd.ByteWidth = sizeof(Vertex_PosCol) * static_cast<uint32_t>(m_Vertices.size());
+		bd.ByteWidth = sizeof(Vertex_PosTex) * static_cast<uint32_t>(m_Vertices.size());
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 		bd.MiscFlags = 0;
@@ -54,12 +55,12 @@ namespace dae
 		result = pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 
 		if (FAILED(result))
-			return;
+			assert("Failed to create vertex buffer");
 
 		//Create index buffer
 		m_AmountOfIndices = static_cast<uint32_t>(m_Indices.size());
 		bd.Usage = D3D11_USAGE_IMMUTABLE;
-		bd.ByteWidth = sizeof(Vertex_PosCol) * m_AmountOfIndices;
+		bd.ByteWidth = sizeof(Vertex_PosTex) * m_AmountOfIndices;
 		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 		bd.MiscFlags = 0;
@@ -69,7 +70,7 @@ namespace dae
 		result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
 
 		if (FAILED(result))
-			return;
+			assert("Failed to create index buffer");
 	}
 
 	Mesh::~Mesh()
@@ -92,7 +93,7 @@ namespace dae
 		pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 		//3. Set VertexBuffer
-		constexpr UINT stride{ sizeof(Vertex_PosCol) };
+		constexpr UINT stride{ sizeof(Vertex_PosTex) };
 		constexpr UINT offset{ 0 };
 		pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
