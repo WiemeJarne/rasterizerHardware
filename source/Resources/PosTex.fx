@@ -31,7 +31,7 @@ VS_OUTPUT VS(VS_INPUT input)
 }
 
 // Pixel Shader
-float4 PS(VS_OUTPUT input) : SV_TARGET
+float3 PS(VS_OUTPUT input) : SV_TARGET
 {
 	return gDiffuseMap.Sample(samPoint, input.UV);
 }

@@ -28,16 +28,17 @@ namespace dae
 		struct Vertex_PosTex
 		{
 			Vector3 position;
-			Vector3 uv;
+			Vector2 uv;
 		};
 
-		std::vector<Vertex_PosCol> m_Vertices
+		std::vector<Vertex_PosTex> m_Vertices
 		{
-			{{0.f, 0.5f, 0.5f}, {1.f, 0.f, 0.f}},
-			{{0.5f, -0.5f, 0.5f}, {0.f, 0.f, 1.f}},
-			{{-0.5f, -0.5f, 0.5f}, {0.f, 1.f, 0.f}}
+			{{0.5f, 0.5f, 0.f}, {1.f, 0.f}},
+			{{-0.5f, -0.5f, 0.f}, {0.f, 1.f}},
+			{{-0.5f, 0.5f, 0.f}, {0.f, 0.f}},
+			{{0.5f, -0.5f, 0.f}, {1.f, 1.f}}
 		};
-		std::vector<uint32_t> m_Indices{0, 1, 2};
+		std::vector<uint32_t> m_Indices{0, 1, 2, 0, 3, 1};
 		uint32_t m_AmountOfIndices{};
 
 		Matrix m_WorldMatrix
