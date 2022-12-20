@@ -80,7 +80,7 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. Set pipeline + invoke drawcalls (= render)
-		Matrix worldViewProjectionMatirx{ m_pMesh->GetWorldMatrix() * m_Camera.viewMatrix * m_Camera.projectionMatrix };
+		Matrix worldViewProjectionMatirx{ m_Camera.viewMatrix * m_Camera.projectionMatrix };
 		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatirx);
 
 		//3. Present BackBuffer (swap)

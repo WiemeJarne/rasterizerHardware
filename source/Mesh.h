@@ -33,12 +33,12 @@ namespace dae
 
 		std::vector<Vertex_PosTex> m_Vertices
 		{
-			{{0.5f, 0.5f, 0.f}, {1.f, 0.f}},
-			{{-0.5f, -0.5f, 0.f}, {0.f, 1.f}},
-			{{-0.5f, 0.5f, 0.f}, {0.f, 0.f}},
-			{{0.5f, -0.5f, 0.f}, {1.f, 1.f}}
+			{{-3.f, 3.f, -2.f}, {0.f, 0.f}},
+			{{3.f, 3.f, -2.f}, {1.f, 0.f}},
+			{{3.f, -3.f, -2.f}, {1.f, 1.f}},
+			{{-3.f, -3.f, -2.f}, {0.f, 1.f}}
 		};
-		std::vector<uint32_t> m_Indices{0, 1, 2, 0, 3, 1};
+		std::vector<uint32_t> m_Indices{0, 1, 2, 0, 2, 3};
 		uint32_t m_AmountOfIndices{};
 
 		Matrix m_WorldMatrix
