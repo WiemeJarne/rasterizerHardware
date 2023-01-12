@@ -1,46 +1,36 @@
 #pragma once
-class Effect;
+#include "pch.h"
+#include "Effect.h"
 
 namespace dae
 {
+	class Texture;
+
 	class Mesh
 	{
 	public:
-		Mesh(ID3D11Device* pDevice);
-		~Mesh();
-
-		void Render(ID3D11DeviceContext* pDeviceContext, const Matrix& worldViewProjectionMatrix) const;
-		Matrix GetWorldMatrix() { return m_WorldMatrix; };
-		Effect* GetEffectPtr() const { return m_pEffect; };
-
-	private:
-		Effect* m_pEffect{};
-		ID3D11InputLayout* m_pInputLayout{};
-		ID3D11Buffer* m_pVertexBuffer{};
-		ID3D11Buffer* m_pIndexBuffer{};
-
-		struct Vertex_PosCol
-		{
-			Vector3 position;
-			ColorRGB color;
-		};
-
 		struct Vertex_PosTex
 		{
 			Vector3 position;
+			Vector3 normal;
+			Vector3 tangent;
 			Vector2 uv;
 		};
 
-		std::vector<Vertex_PosTex> m_Vertices
-		{
-			{{-3.f, 3.f, -2.f}, {0.f, 0.f}},
-			{{3.f, 3.f, -2.f}, {1.f, 0.f}},
-			{{3.f, -3.f, -2.f}, {1.f, 1.f}},
-			{{-3.f, -3.f, -2.f}, {0.f, 1.f}}
-		};
-		std::vector<uint32_t> m_Indices{0, 1, 2, 0, 2, 3};
-		uint32_t m_AmountOfIndices{};
+		Mesh(ID3D11Device* pDevice, const std::string& modelFilePath);
+		virtual ~Mesh();
 
+		Mesh(const Mesh& other) = delete;
+		Mesh(Mesh&& other) = delete;
+		Mesh& operator=(const Mesh& other) = delete;
+		Mesh& operator=(Mesh&& other) = delete;
+
+		virtual void Render(ID3D11DeviceContext* pDeviceContext) const = 0;
+		void RotateYCW(float angle); //CW = clockwise
+		const Matrix& GetWorldMatrix() const { return m_WorldMatrix; }
+		
+
+	protected:
 		Matrix m_WorldMatrix
 		{
 			{1, 0, 0, 0},
@@ -48,5 +38,12 @@ namespace dae
 			{0, 0, 1, 0},
 			{0, 0, 0, 1}
 		};
+
+		ID3D11Buffer* m_pVertexBuffer{};
+		ID3D11Buffer* m_pIndexBuffer{};
+
+		uint32_t m_AmountOfIndices{};
+
+		float rotationAngle{};
 	};
 }

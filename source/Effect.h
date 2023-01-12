@@ -7,27 +7,29 @@ namespace dae
 	class Texture;
 }
 
-class Effect final
+class Effect
 {
 public:
 	Effect(ID3D11Device* pDevice, const std::wstring& filePath);
-	~Effect();
+	virtual ~Effect();
 
 	Effect(const Effect& other) = delete;
 	Effect(Effect&& other) = delete;
 	Effect& operator=(const Effect& other) = delete;
 	Effect& operator=(Effect&& other) = delete;
 
-	ID3DX11Effect* GetEffect() const { return m_pEffect; };
-	ID3DX11EffectTechnique* GetTechnique() const { return m_pTechnique; };
-	void SetMatrix(const dae::Matrix& matrix) { m_pMatWorldViewProjVariable->SetMatrix(reinterpret_cast<const float*>(&matrix)); };
-	void SetDiffuseMap(dae::Texture* pDiffuseTexture);
+	ID3DX11Effect* GetEffect() const { return m_pEffect; }
+	ID3DX11EffectTechnique* GetTechnique() const { return m_pTechnique; }
+	ID3D11InputLayout* GetInputLayout() const { return m_pInputLayout; }
+	void SetWorldViewProjMatrix(const dae::Matrix& worldViewProjMatrix);
 
-private:
+protected:
 	ID3DX11Effect* m_pEffect;
 	ID3DX11EffectTechnique* m_pTechnique;
-	ID3DX11EffectMatrixVariable* m_pMatWorldViewProjVariable;
-	ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable;
-
+	ID3D11InputLayout* m_pInputLayout;
+	
+	ID3DX11EffectMatrixVariable* m_pWorldViewProjMatrixVariable;
+	
+private:
 	static ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& filePath);
 };

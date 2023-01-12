@@ -163,10 +163,10 @@ namespace dae {
 	{
 		return
 		{
-			{ 1 / (aspect * fov), 0, 0, 0},
+			{ 1.f / (aspect * fov), 0, 0, 0},
 			{0, 1 / fov, 0, 0},
 			{0, 0, zf / (zf - zn), 1},
-			{0, 0, -(zf * zn) / (zf - zn), 0}
+			{0, 0, -zf * zn / (zf - zn), 0}
 		};
 	}
 

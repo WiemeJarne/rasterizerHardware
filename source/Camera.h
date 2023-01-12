@@ -56,8 +56,8 @@ namespace dae
 		{
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixlookatlh
 
-			const Matrix result{ Matrix::CreateRotation(totalPitch, totalYaw, 0) };
-			forward = result.TransformVector(Vector3::UnitZ).Normalized();
+			Matrix rotationMatrix{ Matrix::CreateRotation(totalPitch, totalYaw, 0.f) };
+			forward = rotationMatrix.TransformVector(Vector3::UnitZ).Normalized();
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			up = Vector3::Cross(forward, right).Normalized();
 

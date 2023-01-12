@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "Renderer.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "Effect.h"
+#include "Utils.h"
+#include "Sampler.h"
+#include "OpaqueEffect.h"
+#include "OpaqueMesh.h"
+#include "PartialCoverageMesh.h"
 
 namespace dae {
 
@@ -23,14 +25,32 @@ namespace dae {
 		{
 			std::cout << "DirectX initialization failed!\n";
 		}
+		
+		//Create Samplers
+		m_pPointSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::point);
+		m_pLinearSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::linear);
+		m_pAnisotropicSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::anisotropic);
 
-		m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png", m_pDevice);
+		//create the meshes and change it samplerState
+		m_pCombustionEffectMesh = new PartialCoverageMesh(m_pDevice, "Resources/fireFX.obj", L"Resources/PosUV.fx");
+		m_pVehicleMesh = new OpaqueMesh(m_pDevice, "Resources/vehicle.obj", L"Resources/PosTex.fx");
+		m_pVehicleMesh->ChangeSamplerState(m_pDevice, m_pPointSampler);
+		
+		//initialize the camera
+		m_Camera.Initialize(45, { 0.f, 0.f, -50.f }, m_Width / static_cast<float>(m_Height));
 
-		m_pDeviceContext->GenerateMips(m_pTexture->GetSRV());
+		//create texture
+		m_pCombustionEffectDiffuse = Texture::LoadFromFile("Resources/fireFX_diffuse.png", m_pDevice);
+		m_pVehicleDiffuse = Texture::LoadFromFile("Resources/vehicle_diffuse.png", m_pDevice);
+		m_pNormal = Texture::LoadFromFile("Resources/vehicle_normal.png", m_pDevice);
+		m_pSpecular = Texture::LoadFromFile("Resources/vehicle_specular.png", m_pDevice);
+		m_pGlossiness = Texture::LoadFromFile("Resources/vehicle_gloss.png", m_pDevice);
 
-		m_pMesh = new Mesh(m_pDevice);
-		m_pMesh->GetEffectPtr()->SetDiffuseMap(m_pTexture);
-		m_Camera.Initialize(45, { 0.f, 0.f, -10.f }, m_Width / static_cast<float>(m_Height));
+		m_pCombustionEffectMesh->SetDiffuseMap(m_pCombustionEffectDiffuse);
+		m_pVehicleMesh->SetDiffuseMap(m_pVehicleDiffuse);
+		m_pVehicleMesh->SetNormalMap(m_pNormal);
+		m_pVehicleMesh->SetSpecularMap(m_pSpecular);
+		m_pVehicleMesh->SetGlossinessMap(m_pGlossiness);
 	}
 
 	Renderer::~Renderer()
@@ -60,13 +80,31 @@ namespace dae {
 		if (m_pDevice)
 			m_pDevice->Release();
 
-		delete m_pMesh;
-		delete m_pTexture;
+		delete m_pCombustionEffectMesh;
+		delete m_pVehicleMesh;
+		
+		delete m_pCombustionEffectDiffuse;
+		delete m_pVehicleDiffuse;
+		delete m_pNormal;
+		delete m_pSpecular;
+		delete m_pGlossiness;
+
+		delete m_pPointSampler;
+		delete m_pLinearSampler;
+		delete m_pAnisotropicSampler;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_Camera.Update(pTimer);
+
+
+		float angle{ pTimer->GetElapsed() };
+		m_pCombustionEffectMesh->RotateYCW(angle);
+		m_pVehicleMesh->RotateYCW(angle);
+		m_pCombustionEffectMesh->SetWorldViewProjMatrix(m_pCombustionEffectMesh->GetWorldMatrix() * m_Camera.viewMatrix * m_Camera.projectionMatrix);
+		m_pVehicleMesh->SetWorldViewProjMatrix(m_pVehicleMesh->GetWorldMatrix() * m_Camera.viewMatrix * m_Camera.projectionMatrix);
+		m_pVehicleMesh->SetViewInverseMatrix(m_Camera.invViewMatrix);
 	}
 
 	void Renderer::Render() const
@@ -80,8 +118,8 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. Set pipeline + invoke drawcalls (= render)
-		Matrix worldViewProjectionMatirx{ m_Camera.viewMatrix * m_Camera.projectionMatrix };
-		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatirx);
+		m_pVehicleMesh->Render(m_pDeviceContext);
+		m_pCombustionEffectMesh->Render(m_pDeviceContext);
 
 		//3. Present BackBuffer (swap)
 		m_pSwapChain->Present(0, 0);
@@ -205,5 +243,26 @@ namespace dae {
 		m_pDeviceContext->RSSetViewports(1, &viewport);
 
 		return result;
+	}
+
+	void Renderer::ChangeSamplerState()
+	{
+		switch (m_pVehicleMesh->GetSamplerStateKind())
+		{
+		case Sampler::SamplerStateKind::point:
+			m_pVehicleMesh->ChangeSamplerState(m_pDevice, m_pLinearSampler);
+			std::cout << "SamplerState changed to linear\n";
+			break;
+
+		case Sampler::SamplerStateKind::linear:
+			m_pVehicleMesh->ChangeSamplerState(m_pDevice, m_pAnisotropicSampler);
+			std::cout << "SamplerState changed to anisotropic\n";
+			break;
+
+		case Sampler::SamplerStateKind::anisotropic:
+			m_pVehicleMesh->ChangeSamplerState(m_pDevice, m_pPointSampler);
+			std::cout << "SamplerState changed to point\n";
+			break;
+		}
 	}
 }

@@ -5,8 +5,8 @@
 
 namespace dae
 {
-	Texture::Texture(SDL_Surface* pSurface, ID3D11Device* pDevice) :
-		m_pSurfacePixels{ (uint32_t*)pSurface->pixels }
+	Texture::Texture(SDL_Surface* pSurface, ID3D11Device* pDevice)
+		: m_pSurfacePixels{ (uint32_t*)pSurface->pixels }
 	{
 		DXGI_FORMAT format{ DXGI_FORMAT_R8G8B8A8_UNORM };
 		D3D11_TEXTURE2D_DESC desc{};

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Effect.h"
 #include "Texture.h"
+#include <cassert>
 
 Effect::Effect(ID3D11Device* pDevice, const std::wstring& filePath)
 {
@@ -11,23 +12,64 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& filePath)
 	{
 		std::wcout << L"Technique not valid\n";
 	}
-	
-	m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
-	if (!m_pMatWorldViewProjVariable->IsValid())
+
+	m_pWorldViewProjMatrixVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
+	if (!m_pWorldViewProjMatrixVariable->IsValid())
 	{
 		std::wcout << L"m_pMatWorldViewProjVariable not valid!\n";
 	}
 
-	m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
-	if (!m_pDiffuseMapVariable->IsValid())
+	//Create Vertex Layout
+	static constexpr uint32_t amountOfElements{ 4 };
+	D3D11_INPUT_ELEMENT_DESC vertexDesc[amountOfElements]{};
+
+	vertexDesc[0].SemanticName = "POSITION";
+	vertexDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexDesc[0].AlignedByteOffset = 0;
+	vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	vertexDesc[1].SemanticName = "NORMAL";
+	vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexDesc[1].AlignedByteOffset = 12;
+	vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	vertexDesc[2].SemanticName = "TANGENT";
+	vertexDesc[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexDesc[2].AlignedByteOffset = 24;
+	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	vertexDesc[3].SemanticName = "TEXTCOORD";
+	vertexDesc[3].Format = DXGI_FORMAT_R32G32_FLOAT;
+	vertexDesc[3].AlignedByteOffset = 36;
+	vertexDesc[3].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	//Create Input Layout
+	D3DX11_PASS_DESC passDesc{};
+	m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
+
+	HRESULT result
 	{
-		std::wcout << L"m_pDiffuseMapVariable not valid!\n";
-	}
+		pDevice->CreateInputLayout
+		(
+			vertexDesc,
+			amountOfElements,
+			passDesc.pIAInputSignature,
+			passDesc.IAInputSignatureSize,
+			&m_pInputLayout
+		)
+	};
+
+	if (FAILED(result))
+		assert("Failed to create input layout\n");
 }
 
 Effect::~Effect()
 {
-	m_pEffect->Release();
+	if(m_pEffect)
+		m_pEffect->Release();
+
+	if (m_pInputLayout)
+		m_pInputLayout->Release();
 }
 
 ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& filePath)
@@ -86,10 +128,10 @@ ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& fil
 	return pEffect;
 }
 
-void Effect::SetDiffuseMap(dae::Texture* pDiffuseTexture)
+void Effect::SetWorldViewProjMatrix(const dae::Matrix& worldViewProjMatrix)
 {
-	if (m_pDiffuseMapVariable)
+	if (m_pWorldViewProjMatrixVariable)
 	{
-		m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetSRV());
+		m_pWorldViewProjMatrixVariable->SetMatrix(reinterpret_cast<const float*>(&worldViewProjMatrix));
 	}
 }

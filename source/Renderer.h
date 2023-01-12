@@ -1,13 +1,16 @@
 #pragma once
 #include "Camera.h"
+#include "Texture.h"
 
 struct SDL_Window;
 struct SDL_Surface;
+class Sampler;
 
 namespace dae
 {
 	class Mesh;
-	class Texture;
+	class OpaqueMesh;
+	class PartialCoverageMesh;
 
 	class Renderer final
 	{
@@ -22,6 +25,7 @@ namespace dae
 
 		void Update(const Timer* pTimer);
 		void Render() const;
+		void ChangeSamplerState();
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -41,9 +45,20 @@ namespace dae
 		ID3D11Resource* m_pRenderTargetBuffer;
 		ID3D11RenderTargetView* m_pRenderTargetView;
 
-		Texture* m_pTexture;
+		//SamplerStates
+		Sampler* m_pPointSampler;
+		Sampler* m_pLinearSampler;
+		Sampler* m_pAnisotropicSampler;
+		
+		//Textures
+		Texture* m_pCombustionEffectDiffuse;
+		Texture* m_pVehicleDiffuse;
+		Texture* m_pNormal;
+		Texture* m_pSpecular;
+		Texture* m_pGlossiness;
 
-		Mesh* m_pMesh{};
+		OpaqueMesh* m_pVehicleMesh{};
+		PartialCoverageMesh* m_pCombustionEffectMesh{};
 
 		//DIRECTX
 		HRESULT InitializeDirectX();
