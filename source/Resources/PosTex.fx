@@ -16,12 +16,6 @@ struct VS_OUTPUT
 	float2 TextCoord : TEXTCOORD;
 };
 
-RasterizerState gRasterizerState
-{
-	CullMode = back;
-	FrontCounterClockWise = false;
-};
-
 BlendState gBlendState
 {
 	BlendEnable[0] = false;
@@ -39,7 +33,7 @@ DepthStencilState gDepthStencilState
 	DepthEnable = true;
 	DepthWriteMask = all;
 	DepthFunc = less;
-	StencilEnable = false;
+	StencilEnable = true;
 
 	StencilReadMask = 0x0F;
 	StencilWriteMask = 0x0F;
@@ -47,8 +41,8 @@ DepthStencilState gDepthStencilState
 	FrontFaceStencilFunc = always;
 	BackFaceStencilFunc = always;
 
-	FrontFaceStencilDepthFail = keep;
-	BackFaceStencilDepthFail = keep;
+	FrontFaceStencilDepthFail = incr;
+	BackFaceStencilDepthFail = decr;
 
 	FrontFaceStencilPass = keep;
 	BackfaceStencilPass = keep;
@@ -95,7 +89,7 @@ float Phong(float ks, float exp, float3 l, float3 v, float3 n)
 }
 
 // Pixel Shader
-float3 PS(VS_OUTPUT input) : SV_TARGET
+float4 PS(VS_OUTPUT input) : SV_TARGET
 {
 	float3 binormal = cross(input.Normal, input.Tangent);
 
@@ -118,9 +112,8 @@ technique11 DefaultTechnique
 {
 	pass P0
 	{
-		SetRasterizerState(gRasterizerState);
 		SetDepthStencilState(gDepthStencilState, 0);
-		SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFF);
+		SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
 		SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader( ps_5_0, PS() ) );

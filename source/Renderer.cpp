@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Utils.h"
 #include "Sampler.h"
+#include "RasterizerState.h"
 #include "OpaqueEffect.h"
 #include "OpaqueMesh.h"
 #include "PartialCoverageMesh.h"
@@ -31,10 +32,16 @@ namespace dae {
 		m_pLinearSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::linear);
 		m_pAnisotropicSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::anisotropic);
 
+		//Create RasterizerState
+		m_pBackFacCullingeRasterizerState = new RasterizerState(m_pDevice, RasterizerState::CullMode::backFace);
+		m_pFrontFaceCullingRaterizerState = new RasterizerState(m_pDevice, RasterizerState::CullMode::frontFace);
+		m_pNoCullingRasterizerState = new RasterizerState(m_pDevice, RasterizerState::CullMode::none);
+
 		//create the meshes and change it samplerState
 		m_pCombustionEffectMesh = new PartialCoverageMesh(m_pDevice, "Resources/fireFX.obj", L"Resources/PosUV.fx");
 		m_pVehicleMesh = new OpaqueMesh(m_pDevice, "Resources/vehicle.obj", L"Resources/PosTex.fx");
 		m_pVehicleMesh->ChangeSamplerState(m_pDevice, m_pPointSampler);
+		m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pFrontFaceCullingRaterizerState);
 		
 		//initialize the camera
 		m_Camera.Initialize(45, { 0.f, 0.f, -50.f }, m_Width / static_cast<float>(m_Height));
@@ -98,7 +105,6 @@ namespace dae {
 	{
 		m_Camera.Update(pTimer);
 
-
 		float angle{ pTimer->GetElapsed() };
 		m_pCombustionEffectMesh->RotateYCW(angle);
 		m_pVehicleMesh->RotateYCW(angle);
@@ -113,7 +119,7 @@ namespace dae {
 			return;
 
 		//1. Clear RTV and DSV
-		ColorRGB clearColor{ 0.f, 0.f, 0.3f };
+		ColorRGB clearColor{ 0.39f, 0.59f, 0.93f };
 		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, &clearColor.r);
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
@@ -205,7 +211,7 @@ namespace dae {
 		depthStencilViewDesc.Format = depthStencilDesc.Format;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
-
+		
 		result = m_pDevice->CreateTexture2D(&depthStencilDesc, nullptr, &m_pDepthStencilBuffer);
 
 		if (FAILED(result))
@@ -264,5 +270,31 @@ namespace dae {
 			std::cout << "SamplerState changed to point\n";
 			break;
 		}
+	}
+
+	void Renderer::ChangeRasterizerState()
+	{
+		switch (m_pVehicleMesh->GetCullMode())
+		{
+		case RasterizerState::CullMode::backFace:
+			m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pFrontFaceCullingRaterizerState);
+			std::cout << "CullMode changed to frontFace culling\n";
+			break;
+
+		case RasterizerState::CullMode::frontFace:
+			m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pNoCullingRasterizerState);
+			std::cout << "CullMode changed to no culling\n";
+			break;
+
+		case RasterizerState::CullMode::none:
+			m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pBackFacCullingeRasterizerState);
+			std::cout << "CullMode changed to backFace culling\n";
+			break;
+		}
+	}
+
+	void Renderer::ToggleUseUniformClearColor()
+	{
+		m_UseUniformClearColor = !m_UseUniformClearColor;
 	}
 }

@@ -58,6 +58,9 @@
     <ClInclude Include="PartialCoverageMesh.h">
       <Filter>Misc</Filter>
     </ClInclude>
+    <ClInclude Include="RasterizerState.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -98,6 +101,9 @@
       <Filter>Misc</Filter>
     </ClCompile>
     <ClCompile Include="PartialCoverageMesh.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="RasterizerState.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
   </ItemGroup>

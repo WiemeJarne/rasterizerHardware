@@ -62,6 +62,11 @@ int main(int argc, char* args[])
 				{
 					pRenderer->ChangeSamplerState();
 				}
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F9)
+				{
+					pRenderer->ChangeRasterizerState();
+				}
 				break;
 			default: ;
 			}

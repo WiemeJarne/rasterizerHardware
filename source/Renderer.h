@@ -5,6 +5,7 @@
 struct SDL_Window;
 struct SDL_Surface;
 class Sampler;
+class RasterizerState;
 
 namespace dae
 {
@@ -26,6 +27,8 @@ namespace dae
 		void Update(const Timer* pTimer);
 		void Render() const;
 		void ChangeSamplerState();
+		void ChangeRasterizerState();
+		void ToggleUseUniformClearColor();
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -36,6 +39,7 @@ namespace dae
 		Camera m_Camera{};
 
 		bool m_IsInitialized{ false };
+		bool m_UseUniformClearColor{ false };
 
 		ID3D11Device* m_pDevice;
 		ID3D11DeviceContext* m_pDeviceContext;
@@ -49,6 +53,11 @@ namespace dae
 		Sampler* m_pPointSampler;
 		Sampler* m_pLinearSampler;
 		Sampler* m_pAnisotropicSampler;
+
+		//RasterizerStates
+		RasterizerState* m_pBackFacCullingeRasterizerState;
+		RasterizerState* m_pFrontFaceCullingRaterizerState;
+		RasterizerState* m_pNoCullingRasterizerState;
 		
 		//Textures
 		Texture* m_pCombustionEffectDiffuse;

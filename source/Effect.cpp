@@ -18,7 +18,7 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& filePath)
 	{
 		std::wcout << L"m_pMatWorldViewProjVariable not valid!\n";
 	}
-
+	
 	//Create Vertex Layout
 	static constexpr uint32_t amountOfElements{ 4 };
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[amountOfElements]{};
@@ -135,3 +135,4 @@ void Effect::SetWorldViewProjMatrix(const dae::Matrix& worldViewProjMatrix)
 		m_pWorldViewProjMatrixVariable->SetMatrix(reinterpret_cast<const float*>(&worldViewProjMatrix));
 	}
 }
+

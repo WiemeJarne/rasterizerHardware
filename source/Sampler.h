@@ -4,7 +4,6 @@
 class Sampler final
 {
 public:
-
 	enum class SamplerStateKind
 	{
 		point,

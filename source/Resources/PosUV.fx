@@ -88,7 +88,7 @@ technique11 DefaultTechnique
 	{
 		SetRasterizerState(gRasterizerState);
 		SetDepthStencilState(gDepthStencilState, 0);
-		SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFF);
+		SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
 		SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader( ps_5_0, PS() ) );

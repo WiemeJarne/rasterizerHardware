@@ -1,13 +1,18 @@
 #include "pch.h"
 #include "OpaqueMesh.h"
 #include "OpaqueEffect.h"
-
+#include "RasterizerState.h"
+#include <cassert>
 namespace dae
 {
 	OpaqueMesh::OpaqueMesh(ID3D11Device* pDevice, const std::string& modelFilePath, const std::wstring& shaderFilePath)
 		: Mesh(pDevice, modelFilePath)
 		, m_pEffect{ new OpaqueEffect(pDevice, shaderFilePath) }
-	{}
+	{
+		m_RasterizerDesc.CullMode = D3D11_CULL_FRONT;
+
+		pDevice->CreateRasterizerState(&m_RasterizerDesc, &m_pRasterizerState);
+	}
 
 	OpaqueMesh::~OpaqueMesh()
 	{
@@ -20,7 +25,8 @@ namespace dae
 
 		//1. Set Primitive Topology
 		pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		pDeviceContext->RSSetState(m_pRasterizerState);
+		
 		//2. Set Input Layout
 		pDeviceContext->IASetInputLayout(m_pEffect->GetInputLayout());
 
@@ -47,6 +53,12 @@ namespace dae
 	{
 		m_SamplerState = pSampler->GetSamplerStateKind();
 		m_pEffect->SetSamplerState(pSampler->GetSamplerState());
+	}
+
+	void OpaqueMesh::ChangeRasterizerState(ID3D11Device* pDevice, RasterizerState* pRasterizerState)
+	{
+		m_RasterizerState = pRasterizerState->GetCullMode();
+		m_pEffect->SetRasterizerState(pRasterizerState->GetRasterizerState());
 	}
 
 	void OpaqueMesh::SetDiffuseMap(Texture* diffuseMap)
