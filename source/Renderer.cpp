@@ -2,7 +2,6 @@
 #include "Renderer.h"
 #include "Utils.h"
 #include "Sampler.h"
-#include "RasterizerState.h"
 #include "OpaqueEffect.h"
 #include "OpaqueMesh.h"
 #include "PartialCoverageMesh.h"
@@ -16,7 +15,7 @@ namespace dae {
 		SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
 
 		//Initialize DirectX pipeline
-		const HRESULT result = InitializeDirectX();
+		HRESULT result = InitializeDirectX();
 		if (result == S_OK)
 		{
 			m_IsInitialized = true;
@@ -26,22 +25,27 @@ namespace dae {
 		{
 			std::cout << "DirectX initialization failed!\n";
 		}
+
+		m_RasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		m_RasterizerDesc.CullMode = D3D11_CULL_BACK;
+
+		ID3D11RasterizerState* pRasterizerState{};
+
+		result = m_pDevice->CreateRasterizerState(&m_RasterizerDesc, &pRasterizerState);
+
+		if (FAILED(result))
+			assert("Failed to create rasterizerState");
 		
 		//Create Samplers
 		m_pPointSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::point);
 		m_pLinearSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::linear);
 		m_pAnisotropicSampler = new Sampler(m_pDevice, Sampler::SamplerStateKind::anisotropic);
 
-		//Create RasterizerState
-		m_pBackFacCullingeRasterizerState = new RasterizerState(m_pDevice, RasterizerState::CullMode::backFace);
-		m_pFrontFaceCullingRaterizerState = new RasterizerState(m_pDevice, RasterizerState::CullMode::frontFace);
-		m_pNoCullingRasterizerState = new RasterizerState(m_pDevice, RasterizerState::CullMode::none);
-
 		//create the meshes and change it samplerState
 		m_pCombustionEffectMesh = new PartialCoverageMesh(m_pDevice, "Resources/fireFX.obj", L"Resources/PosUV.fx");
 		m_pVehicleMesh = new OpaqueMesh(m_pDevice, "Resources/vehicle.obj", L"Resources/PosTex.fx");
 		m_pVehicleMesh->ChangeSamplerState(m_pDevice, m_pPointSampler);
-		m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pFrontFaceCullingRaterizerState);
+		m_pVehicleMesh->SetRasterizerState(pRasterizerState);
 		
 		//initialize the camera
 		m_Camera.Initialize(45, { 0.f, 0.f, -50.f }, m_Width / static_cast<float>(m_Height));
@@ -105,9 +109,12 @@ namespace dae {
 	{
 		m_Camera.Update(pTimer);
 
-		float angle{ pTimer->GetElapsed() };
-		m_pCombustionEffectMesh->RotateYCW(angle);
-		m_pVehicleMesh->RotateYCW(angle);
+		if (m_IsRotating)
+		{
+			m_pCombustionEffectMesh->RotateYCW(m_pCombustionEffectMesh->GetRotationAngle() + pTimer->GetElapsed() * m_pCombustionEffectMesh->GetRotationSpeed());
+			m_pVehicleMesh->RotateYCW(m_pVehicleMesh->GetRotationAngle() + pTimer->GetElapsed() * m_pVehicleMesh->GetRotationSpeed());
+		}
+
 		m_pCombustionEffectMesh->SetWorldViewProjMatrix(m_pCombustionEffectMesh->GetWorldMatrix() * m_Camera.viewMatrix * m_Camera.projectionMatrix);
 		m_pVehicleMesh->SetWorldViewProjMatrix(m_pVehicleMesh->GetWorldMatrix() * m_Camera.viewMatrix * m_Camera.projectionMatrix);
 		m_pVehicleMesh->SetViewInverseMatrix(m_Camera.invViewMatrix);
@@ -125,8 +132,12 @@ namespace dae {
 
 		//2. Set pipeline + invoke drawcalls (= render)
 		m_pVehicleMesh->Render(m_pDeviceContext);
-		m_pCombustionEffectMesh->Render(m_pDeviceContext);
 
+		if (m_RenderFireFX)
+		{
+			m_pCombustionEffectMesh->Render(m_pDeviceContext);
+		}
+		
 		//3. Present BackBuffer (swap)
 		m_pSwapChain->Present(0, 0);
 	}
@@ -145,17 +156,30 @@ namespace dae {
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG; // |= assignment by bitwise or
 #endif
 
-		HRESULT result{ D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, createDeviceFlags,
-							  &featureLevel, 1, D3D11_SDK_VERSION, &m_pDevice,
-							   nullptr, &m_pDeviceContext										) };
+		HRESULT result
+		{ 
+			D3D11CreateDevice
+			(
+				nullptr,
+				D3D_DRIVER_TYPE_HARDWARE,
+				nullptr,
+				createDeviceFlags,
+				&featureLevel,
+				1,
+				D3D11_SDK_VERSION,
+				&m_pDevice,
+				nullptr,
+				&m_pDeviceContext										
+			) 
+		};
 
 		if (FAILED(result))
 			return result;
 
 		//Create DXGI Factory
-		IDXGIFactory1* pDxgiFactory{};
+		IDXGIFactory* pDxgiFactory{};
 
-		result = CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pDxgiFactory));
+		result = CreateDXGIFactory1(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&pDxgiFactory));
 
 		if (FAILED(result))
 			return result;
@@ -272,29 +296,44 @@ namespace dae {
 		}
 	}
 
-	void Renderer::ChangeRasterizerState()
+	void Renderer::CycleCullModes()
 	{
-		switch (m_pVehicleMesh->GetCullMode())
+		switch (m_RasterizerDesc.CullMode)
 		{
-		case RasterizerState::CullMode::backFace:
-			m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pFrontFaceCullingRaterizerState);
-			std::cout << "CullMode changed to frontFace culling\n";
+		case D3D11_CULL_BACK:
+			m_RasterizerDesc.CullMode = D3D11_CULL_FRONT;
+			std::cout << "CullMode = FRONT\n";
+			break;
+		
+		case D3D11_CULL_FRONT:
+			m_RasterizerDesc.CullMode = D3D11_CULL_NONE;
+			std::cout << "CullMode = NONE\n";
 			break;
 
-		case RasterizerState::CullMode::frontFace:
-			m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pNoCullingRasterizerState);
-			std::cout << "CullMode changed to no culling\n";
-			break;
-
-		case RasterizerState::CullMode::none:
-			m_pVehicleMesh->ChangeRasterizerState(m_pDevice, m_pBackFacCullingeRasterizerState);
-			std::cout << "CullMode changed to backFace culling\n";
+		case D3D11_CULL_NONE:
+			m_RasterizerDesc.CullMode = D3D11_CULL_BACK;
+			std::cout << "CullMode = BACK\n";
 			break;
 		}
+
+		HRESULT result{};
+		ID3D11RasterizerState* pRasterizerState{};
+		result = m_pDevice->CreateRasterizerState(&m_RasterizerDesc, &pRasterizerState);
+
+		if (FAILED(result))
+			assert("Failed to change CullMode\n");
+
+		m_pVehicleMesh->SetRasterizerState(pRasterizerState);
 	}
 
-	void Renderer::ToggleUseUniformClearColor()
+	void Renderer::ToggleIsRotating()
 	{
-		m_UseUniformClearColor = !m_UseUniformClearColor;
+		m_IsRotating = !m_IsRotating;
+	}
+
+	void Renderer::ToggleFireFX()
+	{
+		m_RenderFireFX = !m_RenderFireFX;
 	}
 }
+

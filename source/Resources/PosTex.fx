@@ -33,16 +33,16 @@ DepthStencilState gDepthStencilState
 	DepthEnable = true;
 	DepthWriteMask = all;
 	DepthFunc = less;
-	StencilEnable = true;
+	StencilEnable = false;
 
-	StencilReadMask = 0x0F;
-	StencilWriteMask = 0x0F;
+	StencilReadMask = 0xFF;
+	StencilWriteMask = 0xFF;
 
 	FrontFaceStencilFunc = always;
 	BackFaceStencilFunc = always;
 
-	FrontFaceStencilDepthFail = incr;
-	BackFaceStencilDepthFail = decr;
+	FrontFaceStencilDepthFail = keep;
+	BackFaceStencilDepthFail = keep;
 
 	FrontFaceStencilPass = keep;
 	BackfaceStencilPass = keep;

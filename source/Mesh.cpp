@@ -9,6 +9,8 @@
 namespace dae
 {
 	Mesh::Mesh(ID3D11Device* pDevice, const std::string& modelFilePath)
+		: m_RotationAngle{}
+		, m_RotationSpeed{ 0.785398163f }
 	{
 		std::vector<Vertex_PosTex> vertices;
 		std::vector<uint32_t> indices;
@@ -62,6 +64,7 @@ namespace dae
 
 	void Mesh::RotateYCW(float angle)
 	{
-		m_WorldMatrix = Matrix::CreateRotationY(angle) * m_WorldMatrix;
+		m_RotationAngle = angle;
+		m_WorldMatrix = Matrix::CreateRotationY(m_RotationAngle) * Matrix::CreateTranslation(m_WorldMatrix.GetTranslation());
 	}
 }

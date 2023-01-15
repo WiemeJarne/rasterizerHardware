@@ -20,12 +20,14 @@ namespace dae
 		void Start();
 		void Update();
 		void Stop();
+		void TogglePrintFPS();
 
 		uint32_t GetFPS() const { return m_FPS; };
 		float GetdFPS() const { return m_dFPS; };
 		float GetElapsed() const { return m_ElapsedTime; };
 		float GetTotal() const { return m_TotalTime; };
 		bool IsRunning() const { return !m_IsStopped; };
+		bool GetPrintFPS() const { return m_PrintFPS; }
 
 	private:
 		uint64_t m_BaseTime = 0;
@@ -46,5 +48,6 @@ namespace dae
 
 		bool m_IsStopped = true;
 		bool m_ForceElapsedUpperBound = false;
+		bool m_PrintFPS{ true };
 	};
 }

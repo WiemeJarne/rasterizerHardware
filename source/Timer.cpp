@@ -83,4 +83,9 @@ namespace dae
 			m_IsStopped = true;
 		}
 	}
+
+	void Timer::TogglePrintFPS()
+	{
+		m_PrintFPS = !m_PrintFPS;
+	}
 }

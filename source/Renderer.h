@@ -5,7 +5,6 @@
 struct SDL_Window;
 struct SDL_Surface;
 class Sampler;
-class RasterizerState;
 
 namespace dae
 {
@@ -27,8 +26,9 @@ namespace dae
 		void Update(const Timer* pTimer);
 		void Render() const;
 		void ChangeSamplerState();
-		void ChangeRasterizerState();
-		void ToggleUseUniformClearColor();
+		void CycleCullModes();
+		void ToggleIsRotating();
+		void ToggleFireFX();
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -54,11 +54,6 @@ namespace dae
 		Sampler* m_pLinearSampler;
 		Sampler* m_pAnisotropicSampler;
 
-		//RasterizerStates
-		RasterizerState* m_pBackFacCullingeRasterizerState;
-		RasterizerState* m_pFrontFaceCullingRaterizerState;
-		RasterizerState* m_pNoCullingRasterizerState;
-		
 		//Textures
 		Texture* m_pCombustionEffectDiffuse;
 		Texture* m_pVehicleDiffuse;
@@ -68,6 +63,11 @@ namespace dae
 
 		OpaqueMesh* m_pVehicleMesh{};
 		PartialCoverageMesh* m_pCombustionEffectMesh{};
+
+		D3D11_RASTERIZER_DESC m_RasterizerDesc{};
+
+		bool m_IsRotating{ true };
+		bool m_RenderFireFX{ true };
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "Sampler.h"
-#include "RasterizerState.h"
 
 namespace dae
 {
@@ -28,15 +27,12 @@ namespace dae
 		void SetViewInverseMatrix(const Matrix& viewInverseMatrix);
 		void ChangeSamplerState(ID3D11Device* pDevice, Sampler* pSampler);
 		Sampler::SamplerStateKind GetSamplerStateKind() const { return m_SamplerState; }
-		void ChangeRasterizerState(ID3D11Device* pDevice, RasterizerState* pRasterizerState);
-		RasterizerState::CullMode GetCullMode() const { return m_RasterizerState; }
+		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState);
 
 	private:
 		OpaqueEffect* m_pEffect;
-		D3D11_RASTERIZER_DESC m_RasterizerDesc;
-		ID3D11RasterizerState* m_pRasterizerState;
 
 		Sampler::SamplerStateKind m_SamplerState;
-		RasterizerState::CullMode m_RasterizerState;
+		ID3D11RasterizerState* m_pRasterizerState{};
 	};
 }

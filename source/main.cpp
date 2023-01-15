@@ -60,12 +60,27 @@ int main(int argc, char* args[])
 				//if (e.key.keysym.scancode == SDL_SCANCODE_X)
 				if (e.key.keysym.scancode == SDL_SCANCODE_F2)
 				{
+					pRenderer->ToggleIsRotating();
+				}
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F3)
+				{
+					pRenderer->ToggleFireFX();
+				}
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
+				{
 					pRenderer->ChangeSamplerState();
 				}
 
 				if (e.key.keysym.scancode == SDL_SCANCODE_F9)
 				{
-					pRenderer->ChangeRasterizerState();
+					pRenderer->CycleCullModes();
+				}
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F11)
+				{
+					pTimer->TogglePrintFPS();
 				}
 				break;
 			default: ;
@@ -81,7 +96,7 @@ int main(int argc, char* args[])
 		//--------- Timer ---------
 		pTimer->Update();
 		printTimer += pTimer->GetElapsed();
-		if (printTimer >= 1.f)
+		if (printTimer >= 1.f && pTimer->GetPrintFPS())
 		{
 			printTimer = 0.f;
 			std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;

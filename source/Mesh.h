@@ -28,7 +28,8 @@ namespace dae
 		virtual void Render(ID3D11DeviceContext* pDeviceContext) const = 0;
 		void RotateYCW(float angle); //CW = clockwise
 		const Matrix& GetWorldMatrix() const { return m_WorldMatrix; }
-		
+		float GetRotationSpeed() const { return m_RotationSpeed; }
+		float GetRotationAngle() const { return m_RotationAngle; }
 
 	protected:
 		Matrix m_WorldMatrix
@@ -44,6 +45,8 @@ namespace dae
 
 		uint32_t m_AmountOfIndices{};
 
-		float rotationAngle{};
+	private:
+		float m_RotationAngle{};
+		float m_RotationSpeed{};
 	};
 }
